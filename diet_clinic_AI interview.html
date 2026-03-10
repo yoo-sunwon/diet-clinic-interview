@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>다이어트 클리닉 AI 문진</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #1B5E3B;
+  --green-mid: #2D7A55;
+  --green-light: #52B788;
+  --green-pale: #D8F3DC;
+  --accent: #E76F51;
+  --accent-pale: #FDE8E0;
+  --bg: #F4F8F5;
+  --white: #FFFFFF;
+  --text: #1A2E24;
+  --text-mid: #4A6358;
+  --text-light: #8FAD9A;
+  --border: #C5DDD0;
+  --shadow: 0 4px 20px rgba(27,94,59,0.10);
+  --r: 16px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+header {
+  background: var(--green);
+  padding: 16px 20px 13px;
+  text-align: center;
+  position: sticky; top: 0; z-index: 50;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+}
+header h1 { color: #fff; font-size: 1.15rem; font-weight: 700; }
+header p  { color: #A8D5B8; font-size: 0.75rem; margin-top: 2px; font-weight: 300; }
+#prog-wrap { max-width: 520px; margin: 0 auto; padding: 14px 20px 0; }
+#prog-label { font-size: 0.72rem; color: var(--text-light); margin-bottom: 5px; }
+#prog-bar { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+#prog-fill { height: 100%; background: linear-gradient(90deg, var(--green-light), var(--accent)); border-radius: 99px; transition: width 0.5s ease; width: 0%; }
+main { max-width: 520px; margin: 0 auto; padding: 16px 16px 50px; }
+.screen { display: none; }
+.screen.active { display: block; animation: up 0.4s ease both; }
+@keyframes up { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:none; } }
+
+/* INTRO */
+#s-intro { text-align: center; padding: 10px 0 6px; }
+.intro-icon { width: 82px; height: 82px; border-radius: 50%; background: var(--green-pale); display: flex; align-items: center; justify-content: center; font-size: 2.4rem; margin: 0 auto 18px; }
+#s-intro h2 { font-size: 1.45rem; color: var(--green); line-height: 1.4; margin-bottom: 10px; }
+#s-intro > p { color: var(--text-mid); font-size: 0.9rem; line-height: 1.75; margin-bottom: 22px; }
+.notice { background: var(--accent-pale); border-left: 4px solid var(--accent); border-radius: 10px; padding: 11px 15px; font-size: 0.8rem; color: #7A3B26; text-align: left; line-height: 1.65; margin-bottom: 26px; }
+
+/* CARD */
+.card { background: var(--white); border-radius: var(--r); box-shadow: var(--shadow); padding: 22px 20px 18px; margin-bottom: 14px; border: 1px solid var(--border); }
+.section-title { font-size: 0.72rem; font-weight: 700; color: var(--green-mid); letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--green-pale); }
+.row { margin-bottom: 14px; }
+.row:last-child { margin-bottom: 0; }
+.row label { display: block; font-size: 0.85rem; color: var(--text-mid); margin-bottom: 5px; font-weight: 500; }
+.row input, .row select { width: 100%; padding: 10px 13px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 0.92rem; font-family: 'Noto Sans KR', sans-serif; color: var(--text); background: var(--bg); transition: border 0.2s; -webkit-appearance: none; appearance: none; }
+.row input:focus, .row select:focus { outline: none; border-color: var(--green-light); background: #fff; }
+.select-wrap { position: relative; }
+.select-wrap::after { content: '▾'; position: absolute; right: 13px; top: 50%; transform: translateY(-50%); color: var(--text-light); pointer-events: none; font-size: 0.85rem; }
+
+/* BUTTONS */
+.btn { display: block; width: 100%; padding: 14px; background: var(--green); color: #fff; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; cursor: pointer; transition: background 0.2s, transform 0.1s; letter-spacing: 0.02em; }
+.btn:hover { background: var(--green-mid); }
+.btn:active { transform: scale(0.98); }
+.btn-outline { background: transparent; color: var(--green); border: 2px solid var(--green); margin-top: 10px; }
+.btn-outline:hover { background: var(--green-pale); }
+
+/* RESULT */
+#s-result { padding-top: 4px; }
+.result-hero { background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 100%); border-radius: var(--r); padding: 26px 22px; text-align: center; margin-bottom: 14px; color: #fff; position: relative; overflow: hidden; }
+.result-hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 60%); }
+.result-hero .badge { display: inline-block; background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.3); border-radius: 99px; padding: 3px 12px; font-size: 0.72rem; letter-spacing: 0.08em; margin-bottom: 10px; color: #D8F3DC; }
+.result-hero .bmi-num { font-size: 3.2rem; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+.result-hero .bmi-label { font-size: 1rem; opacity: 0.85; margin-bottom: 14px; }
+.result-hero .type-tag { background: var(--accent); display: inline-block; border-radius: 99px; padding: 5px 18px; font-size: 1rem; font-weight: 700; }
+.result-section-title { font-size: 0.72rem; font-weight: 700; color: var(--green-mid); letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 10px; }
+.strategy-item { display: flex; align-items: flex-start; gap: 10px; padding: 11px 14px; background: var(--green-pale); border-radius: 10px; margin-bottom: 8px; font-size: 0.88rem; color: var(--green); font-weight: 500; line-height: 1.45; }
+.strategy-item::before { content: '✓'; width: 20px; height: 20px; background: var(--green); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; margin-top: 1px; }
+.score-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+.score-row:last-child { border-bottom: none; }
+.score-row span:first-child { color: var(--text-mid); min-width: 90px; }
+.score-bar-wrap { flex: 1; margin: 0 12px; height: 5px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.score-bar { height: 100%; background: var(--green-light); border-radius: 99px; }
+.score-val { font-weight: 700; color: var(--text); min-width: 32px; text-align: right; font-size: 0.8rem; }
+.disclaimer { background: #FFF8E7; border: 1px solid #F5D76E; border-radius: 10px; padding: 11px 14px; font-size: 0.76rem; color: #7D6608; line-height: 1.6; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌿 다이어트 클리닉 AI 문진</h1>
+  <p>데이터는 저장되지 않습니다 · 결과는 화면에만 표시됩니다</p>
+</header>
+
+<div id="prog-wrap">
+  <div id="prog-label">시작 전</div>
+  <div id="prog-bar"><div id="prog-fill"></div></div>
+</div>
+
+<main>
+
+  <!-- INTRO -->
+  <div class="screen active" id="s-intro">
+    <div class="intro-icon">🩺</div>
+    <h2>환자 맞춤<br>다이어트 유형 분석</h2>
+    <p>아래 문진에 답변하시면<br>AI가 비만 유형과 맞춤 전략을 분석합니다.</p>
+    <div class="notice">
+      🔒 <strong>개인정보 보호</strong><br>
+      입력하신 내용은 서버에 전송되거나 저장되지 않습니다.<br>
+      브라우저를 닫으면 모든 데이터가 사라집니다.
+    </div>
+    <button class="btn" onclick="goTo('s-form')">문진 시작하기 →</button>
+  </div>
+
+  <!-- FORM -->
+  <div class="screen" id="s-form">
+    <div class="card">
+      <div class="section-title">① 기본 정보</div>
+      <div class="row">
+        <label>키 (cm)</label>
+        <input type="number" id="height" placeholder="예: 165" min="100" max="250">
+      </div>
+      <div class="row">
+        <label>몸무게 (kg)</label>
+        <input type="number" id="weight" placeholder="예: 70" min="30" max="300">
+      </div>
+      <div class="row">
+        <label>최근 1년 체중 변화</label>
+        <div class="select-wrap">
+          <select id="weight_change">
+            <option value="0">감소</option>
+            <option value="1">비슷</option>
+            <option value="2">증가</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">② 인슐린 저항성</div>
+      <div class="row">
+        <label>식후 졸림 정도</label>
+        <div class="select-wrap">
+          <select id="q1">
+            <option value="0">거의 없음</option>
+            <option value="1">가끔</option>
+            <option value="2">자주</option>
+            <option value="3">거의 매번</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>탄수화물 줄이면 힘든가?</label>
+        <div class="select-wrap">
+          <select id="q2">
+            <option value="0">전혀 아님</option>
+            <option value="1">약간</option>
+            <option value="2">힘듦</option>
+            <option value="3">매우 힘듦</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>단 음식 당김</label>
+        <div class="select-wrap">
+          <select id="q3">
+            <option value="0">거의 없음</option>
+            <option value="1">가끔</option>
+            <option value="2">자주</option>
+            <option value="3">매우 자주</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">③ 식사 패턴</div>
+      <div class="row">
+        <label>야식 빈도</label>
+        <div class="select-wrap">
+          <select id="q4">
+            <option value="0">거의 없음</option>
+            <option value="1">주 1~2회</option>
+            <option value="2">주 3~4회</option>
+            <option value="3">거의 매일</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>아침 식사 빈도</label>
+        <div class="select-wrap">
+          <select id="q5">
+            <option value="0">거의 매일</option>
+            <option value="1">주 3~4회</option>
+            <option value="2">주 1~2회</option>
+            <option value="3">거의 안 먹음</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">④ 생활 습관</div>
+      <div class="row">
+        <label>하루 평균 수면 시간</label>
+        <div class="select-wrap">
+          <select id="q6">
+            <option value="0">8시간 이상</option>
+            <option value="1">7시간</option>
+            <option value="2">6시간</option>
+            <option value="3">5시간 이하</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>하루 평균 걸음 수</label>
+        <div class="select-wrap">
+          <select id="q7">
+            <option value="3">8,000보 이상</option>
+            <option value="2">5,000~8,000보</option>
+            <option value="1">3,000~5,000보</option>
+            <option value="0">3,000보 이하</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>스트레스성 폭식 빈도</label>
+        <div class="select-wrap">
+          <select id="q8">
+            <option value="0">거의 없음</option>
+            <option value="1">가끔</option>
+            <option value="2">자주</option>
+            <option value="3">매우 자주</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">⑤ 다이어트 경험</div>
+      <div class="row">
+        <label>요요 경험 횟수</label>
+        <div class="select-wrap">
+          <select id="q9">
+            <option value="0">없음</option>
+            <option value="1">1~2회</option>
+            <option value="2">3회 이상</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" onclick="analyze()">AI 분석 시작 →</button>
+  </div>
+
+  <!-- RESULT -->
+  <div class="screen" id="s-result">
+    <div class="result-hero">
+      <div class="badge">BMI 분석 결과</div>
+      <div class="bmi-num" id="r-bmi">—</div>
+      <div class="bmi-label" id="r-bmi-label">—</div>
+      <div class="type-tag" id="r-type">—</div>
+    </div>
+    <div class="card">
+      <div class="result-section-title">맞춤 전략</div>
+      <div id="r-strategies"></div>
+    </div>
+    <div class="card">
+      <div class="result-section-title">세부 점수</div>
+      <div id="r-scores"></div>
+    </div>
+    <div class="disclaimer">
+      ⚠️ 이 결과는 의료 진단이 아닌 참고용 분석입니다. 정확한 진단과 치료는 담당 의사와 상담하세요.
+    </div>
+    <button class="btn btn-outline" onclick="reset()">↺ 다시 문진하기</button>
+  </div>
+
+</main>
+
+<script>
+const SCREENS = ['s-intro','s-form','s-result'];
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0, behavior:'smooth'});
+  const idx = SCREENS.indexOf(id);
+  document.getElementById('prog-fill').style.width = (idx / (SCREENS.length-1) * 100) + '%';
+  document.getElementById('prog-label').textContent = ['시작 전','문진 중','분석 완료'][idx];
+}
+
+function v(id) { return parseInt(document.getElementById(id).value); }
+
+function analyze() {
+  const height = parseFloat(document.getElementById('height').value);
+  const weight = parseFloat(document.getElementById('weight').value);
+  if (!height || !weight || height < 100 || weight < 30) {
+    alert('키와 몸무게를 올바르게 입력해 주세요.');
+    return;
+  }
+  const bmi = (weight / ((height/100)**2)).toFixed(1);
+  const bmiLabel = bmi < 18.5 ? '저체중' : bmi < 23 ? '정상 체중' : bmi < 25 ? '과체중' : bmi < 30 ? '비만' : '고도비만';
+
+  const scores = {
+    insulin:  v('q1') + v('q2'),
+    sugar:    v('q3'),
+    night:    v('q4'),
+    sleep:    v('q6'),
+    activity: 3 - v('q7'),
+    stress:   v('q8'),
+    yoyo:     v('q9')
+  };
+
+  const top = Object.entries(scores).sort((a,b) => b[1]-a[1])[0][0];
+
+  const typeMap = {
+    insulin:  { label:'인슐린 저항형',   emoji:'🩸', strategies:['탄수화물(흰쌀·밀가루) 줄이기','단백질 위주 식사 구성','식후 20분 가벼운 걷기','혈당 스파이크 방지 식순 조정'] },
+    sugar:    { label:'당중독형',        emoji:'🍬', strategies:['단 음식·음료 제한','단백질 간식으로 대체','혈당 안정 식단 시작','식사 사이 견과류·치즈 활용'] },
+    night:    { label:'야식형',          emoji:'🌙', strategies:['저녁 단백질 식사로 포만감 확보','밤 탄수화물 섭취 제한','저녁 8시 이후 식사 금지 목표','취침 전 공복 2시간 습관 만들기'] },
+    sleep:    { label:'수면 부족형',     emoji:'😴', strategies:['수면 7시간 이상 확보','늦은 밤 카페인·간식 금지','취침 루틴 만들기','수면 부족은 식욕호르몬 증가와 연결됨'] },
+    activity: { label:'활동 부족형',    emoji:'🚶', strategies:['하루 7,000~10,000보 걷기 목표','엘리베이터 대신 계단 이용','식후 10분 산책 습관 만들기','주 3회 30분 유산소 운동'] },
+    stress:   { label:'스트레스 폭식형', emoji:'😤', strategies:['스트레스 인식 일기 쓰기','폭식 전 물 한 컵 마시기','감정과 식사를 분리하는 훈련','이완 호흡·명상 5분 루틴'] },
+    yoyo:     { label:'요요 반복형',     emoji:'🔄', strategies:['극단적 저칼로리 다이어트 금지','주당 0.5kg 이하 완만한 감량','장기적 식습관 개선 목표','체중보다 허리둘레·근육량에 집중'] }
+  };
+  const fallback = { label:'균형형 비만', emoji:'⚖️', strategies:['균형 잡힌 식단 유지','주 150분 중강도 운동','체중 주간 모니터링','수분 하루 2L 섭취'] };
+  const result = (scores[top] >= 1) ? typeMap[top] : fallback;
+
+  document.getElementById('r-bmi').textContent = bmi;
+  document.getElementById('r-bmi-label').textContent = bmiLabel;
+  document.getElementById('r-type').textContent = result.emoji + ' ' + result.label;
+  document.getElementById('r-strategies').innerHTML = result.strategies.map(s => `<div class="strategy-item">${s}</div>`).join('');
+
+  const scoreNames = { insulin:'인슐린 저항성', sugar:'당 의존도', night:'야식 습관', sleep:'수면 부족', activity:'활동 부족', stress:'스트레스 폭식', yoyo:'요요 이력' };
+  const maxMap = { insulin:6, sugar:3, night:3, sleep:3, activity:3, stress:3, yoyo:2 };
+  document.getElementById('r-scores').innerHTML = Object.entries(scores).map(([k,val]) => {
+    const pct = Math.round((val / maxMap[k]) * 100);
+    return `<div class="score-row"><span>${scoreNames[k]}</span><div class="score-bar-wrap"><div class="score-bar" style="width:${pct}%"></div></div><span class="score-val">${val}/${maxMap[k]}</span></div>`;
+  }).join('');
+
+  goTo('s-result');
+}
+
+function reset() {
+  document.getElementById('height').value = '';
+  document.getElementById('weight').value = '';
+  ['q1','q2','q3','q4','q5','q6','q7','q8','q9','weight_change'].forEach(id => {
+    document.getElementById(id).selectedIndex = 0;
+  });
+  goTo('s-intro');
+}
+</script>
+</body>
+</html>
